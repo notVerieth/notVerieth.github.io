@@ -24,11 +24,13 @@
             padding: 0;
             box-sizing: border-box;
             cursor: none;
+            -webkit-tap-highlight-color: transparent; /* Убирает синий квадрат при нажатии на мобильных */
         }
 
         html, body {
             width: 100%;
             overflow-x: hidden;
+            position: relative;
         }
 
         body {
@@ -40,7 +42,7 @@
 
         a { text-decoration: none; color: inherit; }
 
-        /* --- NOISE & CURSOR --- */
+        /* --- NOISE --- */
         .noise {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -48,6 +50,7 @@
             background: url('https://grainy-gradients.vercel.app/noise.svg');
         }
 
+        /* --- CURSOR --- */
         .cursor {
             position: fixed;
             width: 20px; height: 20px;
@@ -56,10 +59,16 @@
             pointer-events: none; z-index: 9999;
             transform: translate(-50%, -50%);
             mix-blend-mode: difference;
-            transition: width 0.3s, height 0.3s, border-radius 0.3s;
+            transition: width 0.3s, height 0.3s, border-radius 0.3s, opacity 0.3s;
         }
         
         .cursor.hovered { width: 80px; height: 80px; border-radius: 0; }
+        
+        /* Скрываем курсор на тач-устройствах по умолчанию */
+        @media (pointer: coarse) {
+            .cursor { opacity: 0; }
+            .cursor.touch-active { opacity: 1; }
+        }
 
         /* --- NOTIFICATION TOAST --- */
         .notification {
@@ -87,7 +96,11 @@
         }
 
         /* --- LAYOUT --- */
-        .container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 0 20px; 
+        }
 
         /* --- HERO --- */
         header {
@@ -109,10 +122,8 @@
 
         h1 {
             font-family: var(--font-display);
-            /* Уменьшил размер и добавил отрицательный интервал, чтобы слово было плотным */
             font-size: 11.5vw; 
             letter-spacing: -0.03em;
-            
             line-height: 0.8;
             text-transform: uppercase;
             font-weight: 800;
@@ -122,7 +133,6 @@
             text-align: center;
             width: 100%;
             margin: 20px 0;
-            /* Гарантия, что слово не будет переноситься */
             white-space: nowrap; 
         }
         
@@ -205,9 +215,18 @@
         .arrow-icon { font-size: 2rem; transform: rotate(-45deg); transition: 0.3s; }
         .card:hover .arrow-icon { transform: rotate(0deg); }
 
-        /* --- TABLE --- */
+        /* --- TABLE & SCROLL FIX --- */
         .data-section { margin: 100px 0; }
-        .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+        
+        /* Обертка для таблицы, чтобы не ломала мобильную верстку */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+            padding-bottom: 10px; /* Место для скроллбара */
+        }
+
+        .data-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px; /* Минимальная ширина чтобы контент не плющило */ }
         .data-table th, .data-table td { padding: 20px; border-bottom: 1px solid var(--grid-line); }
         .data-table th { text-transform: uppercase; opacity: 0.5; font-size: 0.8rem; }
         .data-table tr:hover { background: var(--text-color); color: var(--bg-color); }
@@ -220,12 +239,18 @@
         }
         .social-link:hover { color: var(--accent-color); }
 
-        /* --- RESPONSIVE --- */
+        /* --- RESPONSIVE ADJUSTMENTS --- */
         @media (max-width: 900px) {
             .bento-grid { grid-template-columns: 1fr; }
             .g-manifesto, .g-github-main, .g-stack, .g-repo { grid-column: span 1; }
-            h1 { font-size: 18vw; } /* На мобилках можно крупнее, там оно перенесется вертикально если что, или ужмется */
+            
+            /* Исправленный размер шрифта для мобильных */
+            h1 { font-size: 12.5vw; } 
+            
             .social-link { display: block; margin-bottom: 15px; }
+            
+            /* Гарантия отступов */
+            .container { padding: 0 20px; width: 100%; }
         }
     </style>
 </head>
@@ -329,31 +354,35 @@
         <!-- EXPERIENCE TABLE -->
         <div class="data-section">
             <h2 style="font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 30px;">// SYSTEM LOGS</h2>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Event / Role</th>
-                        <th>Context</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <td>NOW</td>
-                        <td>UI / UX Study</td>
-                        <td>Personal Research</td>
-                    </tr>
-                    <tr class="hover-target">
-                        <td>2024 — NOW</td>
-                        <td>Software Engineer</td>
-                        <td>Freelance / Open Source / University Student</td>
-                    </tr>
-                    <tr class="hover-target">
-                        <td>2020 — 2024</td>
-                        <td>Technician Programmer</td>
-                        <td>College Student</td>
-                    </tr>
-                </tbody>
-            </table>
+            <!-- Обертка для скролла на мобильных -->
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Event / Role</th>
+                            <th>Context</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="hover-target">
+                            <td>NOW</td>
+                            <td>UI / UX Study</td>
+                            <td>Personal Research</td>
+                        </tr>
+                        <tr class="hover-target">
+                            <td>2024 — NOW</td>
+                            <td>Software Engineer</td>
+                            <td>Freelance / Open Source / University Student</td>
+                        </tr>
+                        <tr class="hover-target">
+                            <td>2020 — 2024</td>
+                            <td>Technician Programmer</td>
+                            <td>College Student</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <!-- FOOTER -->
@@ -370,19 +399,40 @@
 
     <!-- JAVASCRIPT -->
     <script>
-        // 1. КУРСОР
+        // 1. КУРСОР И МОБИЛЬНАЯ ЛОГИКА
         const cursor = document.getElementById('cursor');
         const hoverTargets = document.querySelectorAll('.hover-target');
+        let cursorTimeout;
 
+        // Основное движение мыши (Desktop)
         document.addEventListener('mousemove', (e) => {
             cursor.style.left = e.clientX + 'px';
             cursor.style.top = e.clientY + 'px';
         });
 
+        // Эффект наведения
         hoverTargets.forEach(target => {
             target.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
             target.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
         });
+
+        // Логика для тач-скринов (Телефоны)
+        document.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            cursor.style.left = touch.clientX + 'px';
+            cursor.style.top = touch.clientY + 'px';
+            
+            // Показываем курсор
+            cursor.classList.add('touch-active');
+            
+            // Сбрасываем таймер, если нажали снова
+            clearTimeout(cursorTimeout);
+            
+            // Запускаем таймер на 3 секунды
+            cursorTimeout = setTimeout(() => {
+                cursor.classList.remove('touch-active');
+            }, 3000);
+        }, {passive: true});
 
         // 2. КОПИРОВАНИЕ ПОЧТЫ
         const emailTrigger = document.getElementById('email-trigger');
@@ -405,6 +455,4 @@
         }
     </script>
 </body>
-
 </html>
-
